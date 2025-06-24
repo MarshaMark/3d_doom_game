@@ -8,31 +8,31 @@
         "data": "hwQQABAAAADdy97d3c7b3d3L3t3dztvd3cve3d3O293dy97d3c7b3d3L3t3dztvd3cve3d3O293dy97d3c7b3d3L3t3dztvd3cve3d3O293dy97d3c7b3d3L3t3dztvd3cve3d3O293dy97d3c7b3d3L3t3dztvd3cve3d3O293dy97d3c7b3Q==",
         "mimeType": "image/x-mkcd-f4",
         "tilemapTile": true,
-        "displayName": "myTile"
+        "displayName": "Wall"
     },
     "tile2": {
         "data": "hwQQABAAAAD/////////////b2Zm9v///29mZmZm9v//ZmZmZmZm//9mZoiIZmb/b2aGiIhoZvZvZoiYiYhm9m9miJmZiGb2b2aImZmIZvZvZoiYiYhm9m9mhoiIaGb2/2ZmiIhmZv//ZmZmZmZm//9vZmZmZvb///9vZmb2/////////////w==",
         "mimeType": "image/x-mkcd-f4",
         "tilemapTile": true,
-        "displayName": "myTile0"
+        "displayName": "Spawner"
     },
     "tile3": {
         "data": "hwQQABAAAADMzMzMzMzMzGxmZmZmZmbGbIhmlmlmiMZsiGiWaYaIxmyGiJZpiGjGbGaImImIZsZsZoaIiGhmxmyZmYiImZnGbJmZiIiZmcZsZoaIiGhmxmxmiJiJiGbGbIaIlmmIaMZsiGiWaYaIxmyIZpZpZojGbGZmZmZmZsbMzMzMzMzMzA==",
         "mimeType": "image/x-mkcd-f4",
         "tilemapTile": true,
-        "displayName": "myTile1"
+        "displayName": "CrystalSpawner"
     },
     "tile4": {
         "data": "hwQQABAAAADMzMzMzMzMzLy7u7u7u7vLvLu7u7u7u8u8u7u7u7u7y7y7/////7vLvLt/d3f3u8u8u38ncve7y7y7fyIi97vLvLt/IiL3u8u8u38ncve7y7y7f3d397vLvLv/////u8u8u7u7u7u7y7y7u7u7u7vLvLu7u7u7u8vMzMzMzMzMzA==",
         "mimeType": "image/x-mkcd-f4",
         "tilemapTile": true,
-        "displayName": "myTile2"
+        "displayName": "MedkitSpawner"
     },
     "tile5": {
         "data": "hwQQABAAAADMzMzMzMzMzNzd3d3d3d3N3O7u7u7u7s3c/v/////vzdz+EREREe/N3P5BZmYU783c/kGmahTvzdz+QaZqFO/N3P5BpmoU783c/kGmahTvzdz+QWZmFO/N3P4RERER783c/v/////vzdzu7u7u7u7N3N3d3d3d3c3MzMzMzMzMzA==",
         "mimeType": "image/x-mkcd-f4",
         "tilemapTile": true,
-        "displayName": "myTile3"
+        "displayName": "ShieldSpawner"
     },
     "level1": {
         "id": "level1",
@@ -46,7 +46,7 @@
             "myTiles.tile4",
             "myTiles.tile5"
         ],
-        "displayName": "level1"
+        "displayName": "TstMap01"
     },
     "level2": {
         "id": "level2",
@@ -60,7 +60,7 @@
             "myTiles.tile4",
             "myTiles.tile5"
         ],
-        "displayName": "level2"
+        "displayName": "TstMap02"
     },
     "level9": {
         "id": "level9",
@@ -73,7 +73,7 @@
             "myTiles.tile4",
             "myTiles.tile5"
         ],
-        "displayName": "level9"
+        "displayName": "TstMap03"
     },
     "level3": {
         "id": "level3",
@@ -87,7 +87,7 @@
             "myTiles.tile4",
             "myTiles.tile5"
         ],
-        "displayName": "level3"
+        "displayName": "TstMap04"
     },
     "*": {
         "mimeType": "image/x-mkcd-f4",
