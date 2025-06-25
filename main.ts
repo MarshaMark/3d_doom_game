@@ -10,33 +10,53 @@ namespace StatusBarKind {
     export const Stamina = StatusBarKind.create()
     export const SuitBar = StatusBarKind.create()
 }
+sprites.onOverlap(SpriteKind.Missle, SpriteKind.Enemy, function (sprite, otherSprite) {
+    sprites.changeDataNumberBy(otherSprite, "Health", -1)
+    if (sprites.readDataNumber(otherSprite, "Health") <= 0) {
+        sprites.destroy(otherSprite)
+    }
+    CreateEnvDmg("Explosion", 1, sprite)
+})
 browserEvents.Four.onEvent(browserEvents.KeyEvent.Pressed, function () {
     EquippedGun = "Autogun"
     textSprite.setText("Autogun")
     textSprite.setFlag(SpriteFlag.Invisible, false)
 })
+sprites.onOverlap(SpriteKind.Bullet, SpriteKind.Enemy, function (sprite, otherSprite) {
+    sprites.changeDataNumberBy(otherSprite, "Health", -1)
+    if (sprites.readDataNumber(otherSprite, "Health") <= 0) {
+        sprites.destroy(otherSprite)
+    }
+    sprites.destroy(sprite)
+})
 function SetupStaminaBar () {
-    StaminaBar = statusbars.create(60, 5, StatusBarKind.Stamina)
+    StaminaBar = statusbars.create(60, 4, StatusBarKind.Stamina)
     StaminaBar.setColor(5, 14, 4)
     StaminaBar.max = 300
     StaminaBar.value = StaminaBar.max
-    StaminaBar.setOffsetPadding(31, 2)
+    StaminaBar.setOffsetPadding(31, 6)
     StaminaBar.positionDirection(CollisionDirection.Bottom)
     StaminaBar.setBarBorder(1, 15)
     StaminaBar.setStatusBarFlag(StatusBarFlag.SmoothTransition, true)
+    StaminaBar.setStatusBarFlag(StatusBarFlag.InvertFillDirection, true)
     StaminaBar.setLabel("Sta", 5)
 }
 function SetupExosuitBar () {
-    ExosuitBar = statusbars.create(60, 5, StatusBarKind.SuitBar)
+    ExosuitBar = statusbars.create(158, 6, StatusBarKind.SuitBar)
     ExosuitBar.setColor(3, 11, 6)
     ExosuitBar.max = 1
     ExosuitBar.value = 0
-    ExosuitBar.setOffsetPadding(-49, 9)
-    ExosuitBar.positionDirection(CollisionDirection.Bottom)
+    ExosuitBar.setOffsetPadding(0, 1)
+    ExosuitBar.positionDirection(CollisionDirection.Top)
     ExosuitBar.setBarBorder(1, 15)
-    ExosuitBar.setStatusBarFlag(StatusBarFlag.SmoothTransition, true)
-    ExosuitBar.setStatusBarFlag(StatusBarFlag.LabelAtEnd, true)
-    ExosuitBar.setLabel("Exo", 12)
+    ExoBarText = sprites.create(img`
+        c c c . . . . . . . . . 
+        c c . . c . c . . c c . 
+        c . . . . c . . c . . c 
+        c c c . c . c . . c c . 
+        `, SpriteKind.UI)
+    ExoBarText.setFlag(SpriteFlag.RelativeToCamera, true)
+    ExoBarText.setPosition(80, 4)
 }
 scene.onHitWall(SpriteKind.Missle, function (sprite, location) {
     CreateEnvDmg("Explosion", 1, sprite)
@@ -52,8 +72,142 @@ function SetupBars () {
     SetupExosuitBar()
 }
 function SetupMap () {
-    tiles.setCurrentTilemap(tilemap`TstMap04`)
-    scene.setBackgroundImage(assets.image`BG`)
+    Map = randint(0, 2)
+    if (Map == 0) {
+        tiles.setCurrentTilemap(tilemap`TstMap04`)
+        SetupExosuit(1, 2)
+        SetupPlayer(2, 3)
+    } else if (Map == 1) {
+        tiles.setCurrentTilemap(tilemap`TstMap02`)
+        SetupExosuit(9, 1)
+        SetupPlayer(4, 3)
+    } else if (Map == 2) {
+        tiles.setCurrentTilemap(tilemap`TstMap03`)
+        SetupExosuit(8, 12)
+        SetupPlayer(3, 12)
+    }
+    scene.setBackgroundImage(img`
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+        `)
 }
 function DoExosuit (Enter: boolean) {
     if (Enter) {
@@ -68,7 +222,24 @@ function DoExosuit (Enter: boolean) {
         Camera.setPosition(Exosuit.x, Exosuit.y)
         sprites.destroy(Exosuit)
     } else {
-        Exosuit = sprites.create(assets.image`ExosuitPlaced`, SpriteKind.Suit)
+        Exosuit = sprites.create(img`
+            . . . . . . . . . . . . . . . . 
+            . . . . . c c . . c c . . . . . 
+            . . . . . c c b b c c . . . . . 
+            . . . . . c b 6 9 b c . . . . . 
+            . . . . . c b 8 6 b c . . . . . 
+            . . . . . . c b b c . . . . . . 
+            . . . . . e c c c c e . . . . . 
+            . . . . . c e c e e c . . . . . 
+            . . . . c . . e c . . c . . . . 
+            . . . . c . . c e . . c . . . . 
+            . . . . . . . e c . . . . . . . 
+            . . . . . . e c c e . . . . . . 
+            . . . . . . c e e c . . . . . . 
+            . . . . . . c . . c . . . . . . 
+            . . . . . . c . . c . . . . . . 
+            . . . . . c c . . c c . . . . . 
+            `, SpriteKind.Suit)
         Exosuit.setPosition(Camera.x, Camera.y)
         Render.setSpriteAttribute(Camera, RCSpriteAttribute.ZOffset, 3)
         Render.setAttribute(Render.attribute.fov, 1.5)
@@ -80,9 +251,16 @@ function DoExosuit (Enter: boolean) {
         InSuit = false
     }
 }
-function SetupPlayer () {
+sprites.onOverlap(SpriteKind.Laser, SpriteKind.Enemy, function (sprite, otherSprite) {
+    sprites.changeDataNumberBy(otherSprite, "Health", -1)
+    if (sprites.readDataNumber(otherSprite, "Health") <= 0) {
+        sprites.destroy(otherSprite)
+    }
+    CreateEnvDmg("Explosion", 2, sprite)
+})
+function SetupPlayer (Col: number, Row: number) {
     Camera = Render.getRenderSpriteVariable()
-    tiles.placeOnTile(Camera, tiles.getTileLocation(2, 3))
+    tiles.placeOnTile(Camera, tiles.getTileLocation(Col, Row))
     SuperSpeed = false
     Render.setAttribute(Render.attribute.fov, 1.5)
     Render.setAttribute(Render.attribute.wallZScale, 1.75)
@@ -100,20 +278,52 @@ scene.onHitWall(SpriteKind.Bullet, function (sprite, location) {
         sprites.destroy(sprite)
     }
 })
-function SetupExosuit () {
-    Exosuit = sprites.create(assets.image`Exosuit`, SpriteKind.Suit)
-    tiles.placeOnTile(Exosuit, tiles.getTileLocation(1, 2))
+function SetupExosuit (Col: number, Row: number) {
+    Exosuit = sprites.create(img`
+        . . . . . . . . . . . . . . . . 
+        . . . . . c c . . c c . . . . . 
+        . . . . . c c b b c c . . . . . 
+        . . . . . c b 6 9 b c . . . . . 
+        . . . . . c b 8 6 b c . . . . . 
+        . . . . . . c b b c . . . . . . 
+        . . . . . e c c c c e . . . . . 
+        . . . . . c e c e e c . . . . . 
+        . . . . c . . e c . . c . . . . 
+        . . . . c . . c e . . c . . . . 
+        . . . . . . . e c . . . . . . . 
+        . . . . . . e c c e . . . . . . 
+        . . . . . . c e e c . . . . . . 
+        . . . . . . c . . c . . . . . . 
+        . . . . . . c . . c . . . . . . 
+        . . . . . c c . . c c . . . . . 
+        `, SpriteKind.Suit)
+    tiles.placeOnTile(Exosuit, tiles.getTileLocation(Col, Row))
     InSuit = false
 }
 function Setup () {
     SetupMap()
-    SetupPlayer()
     SetupUI()
-    SetupExosuit()
     Game = true
 }
 function SetupUI () {
-    Gun = sprites.create(assets.image`Nothingness`, SpriteKind.UI)
+    Gun = sprites.create(img`
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        `, SpriteKind.UI)
     EquippedGun = "Pistol"
     Gun.setFlag(SpriteFlag.RelativeToCamera, true)
     Crosshair = sprites.create(img`
@@ -128,9 +338,38 @@ function SetupUI () {
         . . . . . . . . . 
         `, SpriteKind.UI)
     Crosshair.setFlag(SpriteFlag.RelativeToCamera, true)
-    BarUI = sprites.create(assets.image`UIhudBar`, SpriteKind.UI)
+    BarUI = sprites.create(img`
+        cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+        cbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc
+        cbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc
+        cbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc
+        cbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc
+        cbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc
+        cbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc
+        cbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc
+        cbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc
+        cbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc
+        cbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc
+        cbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc
+        `, SpriteKind.UI)
     BarUI.setFlag(SpriteFlag.RelativeToCamera, true)
-    BarUI.y = 112
+    BarUI.y = 114
+    ExoBarUI = sprites.create(img`
+        cbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc
+        cbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc
+        cbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc
+        cbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc
+        cbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc
+        cbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc
+        cbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc
+        cbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc
+        cbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc
+        cbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc
+        cbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc
+        cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+        `, SpriteKind.UI)
+    ExoBarUI.setFlag(SpriteFlag.RelativeToCamera, true)
+    ExoBarUI.setPosition(80, 4)
     textSprite = textsprite.create("e", 15, 3)
     textSprite.setFlag(SpriteFlag.RelativeToCamera, true)
     textSprite.setFlag(SpriteFlag.Invisible, true)
@@ -139,16 +378,16 @@ function SetupUI () {
     SetupBars()
 }
 function SetupHealthBar () {
-    HealthBar = statusbars.create(60, 5, StatusBarKind.Health)
+    HealthBar = statusbars.create(66, 4, StatusBarKind.Health)
     HealthBar.setColor(7, 12, 2)
-    HealthBar.max = 20
+    HealthBar.max = 80
     HealthBar.value = HealthBar.max
-    HealthBar.setOffsetPadding(-49, 2)
+    HealthBar.setOffsetPadding(-46, 1)
     HealthBar.positionDirection(CollisionDirection.Bottom)
     HealthBar.setBarBorder(1, 15)
     HealthBar.setStatusBarFlag(StatusBarFlag.SmoothTransition, true)
     HealthBar.setStatusBarFlag(StatusBarFlag.LabelAtEnd, true)
-    HealthBar.setLabel("H/S", 7)
+    HealthBar.setLabel("HP", 7)
 }
 controller.menu.onEvent(ControllerButtonEvent.Pressed, function () {
     Render.toggleViewMode()
@@ -160,27 +399,56 @@ controller.menu.onEvent(ControllerButtonEvent.Pressed, function () {
 })
 function CreateEnvDmg (Type: string, TypeID: number, Sprite2: Sprite) {
     if (Type == "Explosion" && TypeID == 1) {
-        Explosion = sprites.create(assets.image`Explosion`, SpriteKind.EnvDmg)
+        Explosion = sprites.create(img`
+            5 . . 5 . . . 5 . . . 5 . . 5 
+            . 5 . . 5 5 5 5 5 5 5 . . 5 . 
+            . . 5 5 5 5 4 5 5 4 5 5 5 . . 
+            5 . 5 5 4 5 4 4 4 4 4 5 5 . 5 
+            . 5 5 5 4 4 4 4 4 4 5 5 5 5 . 
+            . 5 4 4 4 4 4 4 4 4 4 4 5 5 . 
+            . 5 5 4 5 4 2 2 2 4 4 4 4 5 . 
+            . 5 5 5 4 2 2 2 2 2 5 4 5 5 5 
+            . 5 5 5 4 4 4 2 2 4 4 5 5 5 . 
+            . 5 5 4 4 4 4 2 4 4 4 4 5 5 . 
+            . 5 5 4 4 5 4 4 4 4 5 4 5 5 . 
+            5 . 5 5 4 5 4 4 4 5 4 5 5 . 5 
+            . . 5 5 5 5 5 4 5 5 5 5 5 . . 
+            . 5 . . 5 5 5 5 5 5 5 . . 5 . 
+            5 . . 5 . . . . . . . 5 . . 5 
+            `, SpriteKind.EnvDmg)
         Explosion.setPosition(Sprite2.x, Sprite2.y)
-        sprites.destroy(Explosion, effects.fire, 500)
+        pause(100)
+        sprites.destroy(Explosion, effects.fire, 650)
         sprites.destroy(Sprite2)
     }
     if (Type == "Explosion" && TypeID == 2) {
-        Explosion = sprites.create(assets.image`MiniExplosion`, SpriteKind.EnvDmg)
+        Explosion = sprites.create(img`
+            5 . . . 5 . . . 5 
+            . 5 5 5 5 4 5 5 . 
+            . 4 5 4 4 4 4 5 . 
+            . 5 4 5 4 4 5 5 . 
+            5 5 5 4 2 4 4 5 5 
+            . 5 4 4 4 4 4 5 . 
+            . 5 5 4 5 4 5 4 . 
+            . 5 5 5 5 5 5 5 . 
+            5 . . . 5 . . . 5 
+            `, SpriteKind.EnvDmg)
         Explosion.setPosition(Sprite2.x, Sprite2.y)
-        sprites.destroy(Explosion, effects.fire, 500)
+        pause(100)
+        sprites.destroy(Explosion, effects.fire, 300)
         sprites.destroy(Sprite2)
     }
 }
 function SetupManaBar () {
-    ManaBar = statusbars.create(60, 5, StatusBarKind.Magic)
+    ManaBar = statusbars.create(60, 4, StatusBarKind.Magic)
     ManaBar.setColor(9, 8, 6)
     ManaBar.max = 30
     ManaBar.value = ManaBar.max
-    ManaBar.setOffsetPadding(31, 9)
+    ManaBar.setOffsetPadding(-49, 6)
     ManaBar.positionDirection(CollisionDirection.Bottom)
     ManaBar.setBarBorder(1, 15)
     ManaBar.setStatusBarFlag(StatusBarFlag.SmoothTransition, true)
+    ManaBar.setStatusBarFlag(StatusBarFlag.LabelAtEnd, true)
     ManaBar.setLabel("Mag", 9)
 }
 browserEvents.Two.onEvent(browserEvents.KeyEvent.Pressed, function () {
@@ -193,30 +461,41 @@ browserEvents.One.onEvent(browserEvents.KeyEvent.Pressed, function () {
     textSprite.setText("Pistol")
     textSprite.setFlag(SpriteFlag.Invisible, false)
 })
+sprites.onOverlap(SpriteKind.EnvDmg, SpriteKind.Enemy, function (sprite, otherSprite) {
+    sprites.changeDataNumberBy(otherSprite, "Health", -1)
+    if (sprites.readDataNumber(otherSprite, "Health") <= 0) {
+        sprites.destroy(otherSprite)
+    }
+})
 browserEvents.Five.onEvent(browserEvents.KeyEvent.Pressed, function () {
     EquippedGun = "Machinegun"
     textSprite.setText("Machine gun")
     textSprite.setFlag(SpriteFlag.Invisible, false)
 })
 function SetupShieldBar () {
-    ShieldBar = statusbars.create(58, 3, StatusBarKind.Energy)
+    ShieldBar = statusbars.create(66, 4, StatusBarKind.Energy)
     ShieldBar.setColor(10, 0, 12)
     ShieldBar.max = 10
     ShieldBar.value = ShieldBar.max
-    ShieldBar.setOffsetPadding(-49, 3)
+    ShieldBar.setOffsetPadding(34, 1)
     ShieldBar.positionDirection(CollisionDirection.Bottom)
+    ShieldBar.setBarBorder(1, 15)
     ShieldBar.setStatusBarFlag(StatusBarFlag.SmoothTransition, true)
+    ShieldBar.setStatusBarFlag(StatusBarFlag.InvertFillDirection, true)
+    ShieldBar.setLabel("SP", 10)
 }
 let Bullet: Sprite = null
 let Missile: Sprite = null
-let Laser: Sprite = null
 let Speed = 0
+let Laser: Sprite = null
 let Zoom = false
 let SuperZoom = false
+let mySprite: Sprite = null
 let ShieldBar: StatusBarSprite = null
 let ManaBar: StatusBarSprite = null
 let Explosion: Sprite = null
 let HealthBar: StatusBarSprite = null
+let ExoBarUI: Sprite = null
 let BarUI: Sprite = null
 let Crosshair: Sprite = null
 let Gun: Sprite = null
@@ -224,6 +503,8 @@ let Exosuit: Sprite = null
 let SuperSpeed = false
 let Camera: Sprite = null
 let InSuit = false
+let Map = 0
+let ExoBarText: Sprite = null
 let ExosuitBar: StatusBarSprite = null
 let StaminaBar: StatusBarSprite = null
 let textSprite: TextSprite = null
@@ -231,6 +512,29 @@ let EquippedGun = ""
 let Game = false
 Setup()
 Game = false
+game.onUpdateInterval(randint(1000, 5000), function () {
+    mySprite = sprites.create(img`
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . 2 2 . . . . . . . 
+        . . . . . . 2 . . 2 . . . . . . 
+        . . . . . . 2 . . 2 . . . . . . 
+        . . . . . . . 2 2 . . . . . . . 
+        . . . . . . . 2 2 . . . . . . . 
+        . . . . . . . 2 2 . . . . . . . 
+        . . . . . . . 2 2 . . . . . . . 
+        . . . . . . . 2 2 . . . . . . . 
+        . . . . . . 2 2 2 2 . . . . . . 
+        . . . . . . 2 . . 2 2 . . . . . 
+        . . . . . 2 2 . . . 2 2 . . . . 
+        . . . . . 2 . . . . . 2 . . . . 
+        `, SpriteKind.Enemy)
+    tiles.placeOnRandomTile(mySprite, assets.tile`Spawner`)
+    sprites.setDataNumber(mySprite, "Health", 3)
+    mySprite.follow(Camera, 30)
+})
 forever(function () {
     if (browserEvents.X.isPressed()) {
         SuperZoom = !(SuperZoom)
@@ -248,16 +552,115 @@ forever(function () {
 })
 forever(function () {
     if (EquippedGun == "Pistol") {
-        Gun.setImage(assets.image`Pistol`)
+        Gun.setImage(img`
+            ................................
+            ................................
+            ................................
+            ................................
+            ................................
+            ................................
+            ................................
+            ................................
+            ................................
+            ................................
+            ................................
+            ................................
+            ................................
+            ................................
+            ................................
+            ...............cc...............
+            ..............cbbc..............
+            ..............cbbc..............
+            ..............cbbc..............
+            ..............cbbc..............
+            ..............cbbc..............
+            ..............cbbc..............
+            ..............cbbc..............
+            ..............cbbc..............
+            ..............cbbc..............
+            .............f1dd1f.............
+            .............fddddf.............
+            .............feddef.............
+            .............feeeef.............
+            ..............feeef.............
+            ..............feeeef............
+            ...............feeef............
+            `)
         Gun.setPosition(80, 80)
         Gun.setScale(2, ScaleAnchor.Middle)
     } else if (EquippedGun == "Rifle") {
-        Gun.setImage(assets.image`Rifle`)
-        Gun.setPosition(80, 86)
+        Gun.setImage(img`
+            ................................
+            ................................
+            ................................
+            ................................
+            ................................
+            ................................
+            ................................
+            ................................
+            ................................
+            ...............cc...............
+            ..............cbbc..............
+            ..............cbbc..............
+            ..............cbbc..............
+            ..............cbbc..............
+            .............fcbbc..............
+            ............fdcbbc..............
+            ...........fddcbbc..............
+            ..........feedcbbc..............
+            ..........feedcbbc..............
+            .........feeefcbbc..............
+            .........feef.cbbc..............
+            .........feef.cbbc..............
+            ........feeef.cbbcf.............
+            ........feeef.f1dd1f............
+            ........feef..fddddf............
+            ........feef..feddef............
+            ........feef..feeeef............
+            .......feeef...feeef............
+            .......feeef...feeeef...........
+            .......feef.....feeef...........
+            .......feef.....feeef...........
+            .......feef.....feeef...........
+            `)
+        Gun.setPosition(80, 88)
         Gun.setScale(2, ScaleAnchor.Middle)
     } else if (EquippedGun == "Shotgun") {
-        Gun.setImage(assets.image`Shotgun`)
-        Gun.setPosition(80, 86)
+        Gun.setImage(img`
+            ................................
+            ................................
+            ................................
+            ................................
+            ................................
+            ................................
+            ................................
+            ................................
+            ...............ccc..............
+            ..............cbbbc.............
+            ..............cbbbc.............
+            ..............cbbbc.............
+            ..............cbbbc.............
+            ..............cbbbc.............
+            ..............cbbbc.............
+            .............fccccc.............
+            ............fdccbcc.............
+            ...........feecbbbc.............
+            ...........feeccccc.............
+            ..........feeecbbbc.............
+            ..........feefcbbbc.............
+            ..........feefcbbbc.............
+            .........feeefcbbbc.............
+            .........feeeff1dd1f............
+            .........feef.fddddf............
+            .........feef.feddef............
+            .........feef.feeeef............
+            ........feeef..feeef............
+            ........feeef..feeeef...........
+            ........feef....feeef...........
+            ........feef....feeef...........
+            ........feef....feeef...........
+            `)
+        Gun.setPosition(80, 88)
         Gun.setScale(2, ScaleAnchor.Middle)
     } else if (EquippedGun == "Autogun") {
         Gun.setImage(img`
@@ -269,36 +672,69 @@ forever(function () {
             ................................
             ................................
             ................................
-            ..............cc................
-            .............cbbc...............
-            .............cbbc...............
-            .............cccc...............
-            ............fcbbc...............
-            ...........fdcbbc...............
-            ..........fddcbbc...............
-            .........feedcccc...............
-            .........feedcbbc...............
-            ........feeefcbbc...............
-            ........feef.cbbc...............
-            ........feef.cbbc...............
-            .......feeef.cbbc...............
-            .......feeef.cbbc...............
-            .......feeef.cbbcf..............
-            .......feef..f1dd1f.............
-            .......feef..fddddf.............
-            .......feef..feddef.............
-            ......feeef..feeeef.............
-            ......feeef...feeef.............
-            ......feef....feeeef............
-            ......feef.....feeef............
-            ......feef.....feeef............
-            ......feef.....feeef............
+            ...............cc...............
+            ..............cbbc..............
+            ..............cbbc..............
+            ..............cccc..............
+            ..............cbbc..............
+            .............fcbbc..............
+            ............fdcbbc..............
+            ...........feecccc..............
+            ...........feecbbc..............
+            ..........feeecbbc..............
+            ..........feefcbbc..............
+            ..........feefcbbc..............
+            .........feeefcbbc..............
+            .........feeefcbbc..............
+            .........feeefcbbcf.............
+            .........feef.f1dd1f............
+            .........feef.fddddf............
+            .........feef.feddef............
+            ........feeef.feeeef............
+            ........feeef..feeef............
+            ........feef...feeeef...........
+            ........feef....feeef...........
+            ........feef....feeef...........
+            ........feef....feeef...........
             `)
-        Gun.setPosition(80, 86)
+        Gun.setPosition(80, 88)
         Gun.setScale(2, ScaleAnchor.Middle)
     } else if (EquippedGun == "Machinegun") {
-        Gun.setImage(assets.image`Autogun`)
-        Gun.setPosition(80, 86)
+        Gun.setImage(img`
+            ................................
+            ................................
+            ................................
+            ................................
+            ................................
+            ................................
+            ................................
+            ................................
+            ...............ccc..............
+            ..............cbbbc.............
+            ..............cbbbc.............
+            ..............cbbbc.............
+            ..............cbbbc.............
+            .............fcc6cc.............
+            ............fdccccc.............
+            ...........feeccacc.............
+            ...........feeccccc.............
+            ..........feeecc6cc.............
+            ..........feefcbbbc.............
+            ..........feefcbbbc.............
+            .........feeefcbbbc.............
+            .........feeefcbbbc.............
+            .........feeefcbbbc.............
+            .........feef.f1dd1f............
+            .........feef.fddddf............
+            .........feef.feddef............
+            ........feeef.feeeef............
+            ........feeef..feeef............
+            ........feef...feeeef...........
+            ........feef....feeef...........
+            ........feef....feeef...........
+            ........feef....feeef...........
+            `)
+        Gun.setPosition(80, 88)
         Gun.setScale(2, ScaleAnchor.Middle)
     } else {
     	
@@ -335,6 +771,27 @@ forever(function () {
     }
 })
 forever(function () {
+    if (browserEvents.Q.isPressed() && InSuit) {
+        Laser = sprites.create(img`
+            2 
+            `, SpriteKind.Laser)
+        Laser.setPosition(Camera.x, Camera.y)
+        Laser.setVelocity(Render.getAttribute(Render.attribute.dirX) * 800, Render.getAttribute(Render.attribute.dirY) * 800)
+        Render.setSpriteAttribute(Laser, RCSpriteAttribute.ZOffset, 4)
+        browserEvents.Q.pauseUntil(browserEvents.KeyEvent.Released)
+    }
+})
+forever(function () {
+    if (browserEvents.Space.isPressed()) {
+        if (InSuit) {
+            Render.jump(Camera, 80)
+        } else {
+            Render.jump(Camera, 60)
+        }
+        pauseUntil(() => !(browserEvents.Space.isPressed()))
+    }
+})
+forever(function () {
     Render.moveWithController(Speed, 3, Speed / 2.5 + 0.5)
     if (browserEvents.Shift.isPressed() && StaminaBar.value > 4 && (browserEvents.W.isPressed() || browserEvents.S.isPressed())) {
         if (SuperSpeed) {
@@ -361,27 +818,16 @@ forever(function () {
     }
 })
 forever(function () {
-    if (browserEvents.Q.isPressed() && InSuit) {
-        Laser = sprites.create(assets.image`Laser`, SpriteKind.Laser)
-        Laser.setPosition(Camera.x, Camera.y)
-        Laser.setVelocity(Render.getAttribute(Render.attribute.dirX) * 800, Render.getAttribute(Render.attribute.dirY) * 800)
-        Render.setSpriteAttribute(Laser, RCSpriteAttribute.ZOffset, 4)
-        browserEvents.Q.pauseUntil(browserEvents.KeyEvent.Released)
-    }
-})
-forever(function () {
-    if (browserEvents.Space.isPressed()) {
-        if (InSuit) {
-            Render.jump(Camera, 80)
-        } else {
-            Render.jump(Camera, 60)
-        }
-        pauseUntil(() => !(browserEvents.Space.isPressed()))
-    }
-})
-forever(function () {
     if (browserEvents.E.isPressed() && InSuit) {
-        Missile = sprites.create(assets.image`Rocket`, SpriteKind.Missle)
+        Missile = sprites.create(img`
+            . 5 c c c 5 . 
+            c c 5 4 5 c c 
+            5 5 4 4 4 4 5 
+            c 5 4 2 4 5 c 
+            5 4 4 4 4 5 5 
+            c 5 5 5 4 c c 
+            . 5 c 5 c 5 . 
+            `, SpriteKind.Missle)
         Missile.setPosition(Camera.x, Camera.y)
         Missile.setVelocity(Render.getAttribute(Render.attribute.dirX) * 80, Render.getAttribute(Render.attribute.dirY) * 80)
         Render.setSpriteAttribute(Missile, RCSpriteAttribute.ZOffset, 3)
@@ -390,7 +836,10 @@ forever(function () {
 })
 forever(function () {
     if (browserEvents.MouseLeft.isPressed()) {
-        Bullet = sprites.create(assets.image`Bullet`, SpriteKind.Bullet)
+        Bullet = sprites.create(img`
+            2 2 
+            2 2 
+            `, SpriteKind.Bullet)
         Bullet.setPosition(Camera.x, Camera.y)
         Bullet.setVelocity(Render.getAttribute(Render.attribute.dirX) * 200, Render.getAttribute(Render.attribute.dirY) * 200)
         Render.setSpriteAttribute(Bullet, RCSpriteAttribute.ZOffset, 2)
