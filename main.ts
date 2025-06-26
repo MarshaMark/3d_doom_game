@@ -271,6 +271,9 @@ browserEvents.Three.onEvent(browserEvents.KeyEvent.Pressed, function () {
     textSprite.setText("Shotgun")
     textSprite.setFlag(SpriteFlag.Invisible, false)
 })
+statusbars.onZero(StatusBarKind.Health, function (status) {
+    game.gameOver(false)
+})
 scene.onHitWall(SpriteKind.Bullet, function (sprite, location) {
     if (randint(0, 1) == 0) {
         sprite.setBounceOnWall(true)
@@ -300,6 +303,17 @@ function SetupExosuit (Col: number, Row: number) {
     tiles.placeOnTile(Exosuit, tiles.getTileLocation(Col, Row))
     InSuit = false
 }
+sprites.onOverlap(SpriteKind.Enemy, SpriteKind.Player, function (sprite, otherSprite) {
+    if (ShieldBar.value > 0) {
+        ShieldBar.value += sprites.readDataNumber(sprite, "Damage")
+    } else {
+        HealthBar.value += sprites.readDataNumber(sprite, "Damage")
+    }
+    if (sprites.readDataNumber(sprite, "Health") <= 0) {
+        sprites.destroy(sprite)
+    }
+    sprites.changeDataNumberBy(sprite, "Health", -2)
+})
 function Setup () {
     SetupMap()
     SetupUI()
@@ -380,7 +394,7 @@ function SetupUI () {
 function SetupHealthBar () {
     HealthBar = statusbars.create(66, 4, StatusBarKind.Health)
     HealthBar.setColor(7, 12, 2)
-    HealthBar.max = 80
+    HealthBar.max = 64
     HealthBar.value = HealthBar.max
     HealthBar.setOffsetPadding(-46, 1)
     HealthBar.positionDirection(CollisionDirection.Bottom)
@@ -475,7 +489,7 @@ browserEvents.Five.onEvent(browserEvents.KeyEvent.Pressed, function () {
 function SetupShieldBar () {
     ShieldBar = statusbars.create(66, 4, StatusBarKind.Energy)
     ShieldBar.setColor(10, 0, 12)
-    ShieldBar.max = 10
+    ShieldBar.max = 32
     ShieldBar.value = ShieldBar.max
     ShieldBar.setOffsetPadding(34, 1)
     ShieldBar.positionDirection(CollisionDirection.Bottom)
@@ -491,14 +505,14 @@ let Laser: Sprite = null
 let Zoom = false
 let SuperZoom = false
 let mySprite: Sprite = null
-let ShieldBar: StatusBarSprite = null
 let ManaBar: StatusBarSprite = null
 let Explosion: Sprite = null
-let HealthBar: StatusBarSprite = null
 let ExoBarUI: Sprite = null
 let BarUI: Sprite = null
 let Crosshair: Sprite = null
 let Gun: Sprite = null
+let HealthBar: StatusBarSprite = null
+let ShieldBar: StatusBarSprite = null
 let Exosuit: Sprite = null
 let SuperSpeed = false
 let Camera: Sprite = null
@@ -533,6 +547,7 @@ game.onUpdateInterval(randint(1000, 5000), function () {
         `, SpriteKind.Enemy)
     tiles.placeOnRandomTile(mySprite, assets.tile`Spawner`)
     sprites.setDataNumber(mySprite, "Health", 3)
+    sprites.setDataNumber(mySprite, "Damage", -2)
     mySprite.follow(Camera, 30)
 })
 forever(function () {
@@ -844,5 +859,19 @@ forever(function () {
         Bullet.setVelocity(Render.getAttribute(Render.attribute.dirX) * 200, Render.getAttribute(Render.attribute.dirY) * 200)
         Render.setSpriteAttribute(Bullet, RCSpriteAttribute.ZOffset, 2)
         browserEvents.MouseLeft.pauseUntil(browserEvents.MouseButtonEvent.Released)
+    }
+})
+forever(function () {
+    if (ShieldBar.value < ShieldBar.max && InSuit && ExosuitBar.value >= 3) {
+        ShieldBar.value += 2
+        ExosuitBar.value += -3
+        pause(800)
+    } else {
+        if (InSuit) {
+            ExosuitBar.value += 1
+            pause(250)
+        } else {
+        	
+        }
     }
 })
